@@ -4,53 +4,54 @@ import com.google.gson.Gson;
 import com.moesif.api.controllers.APIController;
 import com.moesif.api.models.*;
 import moesif.analytics.reporter.utils.MoesifConstants;
-import moesif.analytics.reporter.utils.UUIDCreator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.am.analytics.publisher.exception.MetricCreationException;
 import org.wso2.am.analytics.publisher.exception.MetricReportingException;
-import org.wso2.am.analytics.publisher.reporter.CounterMetric;
 import org.wso2.am.analytics.publisher.reporter.GenericInputValidator;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.MetricSchema;
+import org.wso2.am.analytics.publisher.reporter.cloud.DefaultChoreoFaultMetricEventBuilder;
+import org.wso2.am.analytics.publisher.reporter.cloud.DefaultChoreoResponseMetricEventBuilder;
+import org.wso2.am.analytics.publisher.reporter.cloud.DefaultCounterMetric;
+import org.wso2.am.analytics.publisher.reporter.cloud.EventQueue;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MoesifLogCounter implements CounterMetric {
+public class MoesifChoreoParallelLogCounter extends DefaultCounterMetric {
 
-
-
-    private static final Logger log = LoggerFactory.getLogger(MoesifLogCounter.class);
+    private static final Logger log = LoggerFactory.getLogger(MoesifChoreoParallelLogCounter.class);
     private String name;
     private MetricSchema schema;
     private final Gson gson;
-
     private APIController api;
 
     // uses to create a UUID (userID) from the userIP
     static final String UUIDNameSpace = MoesifConstants.NAMESPACE_URL;
-    private UUIDCreator uuidCreator;
 
-    private final Map<String,String> properties;
-    public MoesifLogCounter(String name, MetricSchema schema, APIController  api,Map<String, String> properties) {
-        this.name = name;
-        this.schema = schema;
+
+    public MoesifChoreoParallelLogCounter(String name, MetricSchema schema,EventQueue queue, APIController  api) throws MetricCreationException {
+        super(name,queue,schema);
+        this.name=name;
+        this.schema=schema;
         this.api = api;
         this.gson = new Gson();
-        this.uuidCreator = new UUIDCreator();
-        this.properties = properties;
     }
 
     @Override
-    public int incrementCount(MetricEventBuilder metricEventBuilder) throws MetricReportingException {
-        Map<String, Object> event = metricEventBuilder.build();
+    public int incrementCount(MetricEventBuilder metricEventBuilder) {
+        super.incrementCount(metricEventBuilder);
+        MoesifChoreoMetricEventBuilder builder = (MoesifChoreoMetricEventBuilder) metricEventBuilder;
         try {
+            Map<String, Object> event = metricEventBuilder.build();
             publish(event);
         } catch (Throwable e) {
-            throw new RuntimeException("Moesif: Not publishing event");
+            log.error("Moesif: Not publishing event");
         }
         return 0;
     }
@@ -69,9 +70,13 @@ public class MoesifLogCounter implements CounterMetric {
     public MetricEventBuilder getEventBuilder() {
         switch (schema) {
             case RESPONSE:
-                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.RESPONSE));
+                return new MoesifDefaultResponseMetricEventBuilder();
             case ERROR:
-                return new MoesifResponseMetricEventBuilder(GenericInputValidator.getInstance().getEventProperties(MetricSchema.ERROR));
+                return new MoesifDefaultFaultMetricEventBuilder();
+            case CHOREO_RESPONSE:
+                return new MoesifChoreoResponseMetricEventBuilder();
+            case CHOREO_ERROR:
+                return new MoesifChoreoFaultMetricEventBuilder();
             default:
                 // will not happen
                 return null;
@@ -82,10 +87,12 @@ public class MoesifLogCounter implements CounterMetric {
 
         switch(schema) {
             case RESPONSE:
-//                ArrayList<EventModel> events = new ArrayList<>();
-//                events.add(buildEventResponse(event));
-//                api.createEventsBatchAsync(events,null);
-                api.createEvent(buildEventResponse(event));
+                // Async
+                 ArrayList<EventModel> events = new ArrayList<>();
+                 events.add(buildEventResponse(event));
+                 api.createEventsBatchAsync(events,null);
+                 // Sync
+                // api.createEvent(buildEventResponse(event));
                 break;
             case ERROR:
                 api.createEvent(buildEventFault(event));
@@ -97,10 +104,7 @@ public class MoesifLogCounter implements CounterMetric {
         String jsonString = gson.toJson(data);
         String reqBody =  jsonString.replaceAll("[\r\n]", "");
 
-        String propertiesStr = gson.toJson(this.properties).replaceAll("[\r\n]", "");
-
-        reqBody = reqBody +"\n" +propertiesStr;
-        //      Preprocessing data
+        // Preprocessing data
         final URL uri = new URL((String) data.get(MoesifConstants.DESTINATION));
         final String hostName = uri.getHost();
 
@@ -111,18 +115,6 @@ public class MoesifLogCounter implements CounterMetric {
         reqHeaders.put("User-Agent", (String) data.getOrDefault(MoesifConstants.USER_AGENT_HEADER,MoesifConstants.UNKNOWN_VALUE));
         reqHeaders.put("Content-Type", MoesifConstants.MOESIF_CONTENT_TYPE_HEADER);
         reqHeaders.put("Host",hostName);
-
-//        reqHeaders.put("Connection", "Keep-Alive");
-//        reqHeaders.put("Content-Length", "126");
-//        reqHeaders.put("Accept-Encoding", "gzip");
-
-//         Following headers are applicable for every request.
-//          accept
-//          connection
-
-//         Following headers are applicable if payload is passed along the req obj.
-//          content-length
-//          content-encoding
 
         Map<String, String> rspHeaders = new HashMap<String, String>();
 
@@ -160,7 +152,7 @@ public class MoesifLogCounter implements CounterMetric {
         return eventModel;
     }
     public EventModel buildEventFault(Map<String , Object>  data) throws IOException, MetricReportingException {
-// Generate the event
+        // Generate the event
         String jsonString = gson.toJson(data);
         String reqBody =  jsonString.replaceAll("[\r\n]", "");
 
@@ -192,8 +184,6 @@ public class MoesifLogCounter implements CounterMetric {
         EventModel eventModel = new EventBuilder()
                 .request(eventReq)
                 .response(eventRsp)
-                .userId(this.uuidCreator.getUUIDStrFromName(MoesifLogCounter.UUIDNameSpace,
-                                                            userIP))
                 .companyId((String) data.get(MoesifConstants.ORGANIZATION_ID))
                 .build();
 

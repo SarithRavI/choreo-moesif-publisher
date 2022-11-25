@@ -21,7 +21,7 @@ package moesif.analytics.constants;
 /**
  * MetadataConstants class contains all the Metadata Key Values added from enforcer.
  */
-public class MoesifMetadataConstants {
+public class MoesifChoreoMetadataConstants {
     public static final String EXT_AUTH_METADATA_CONTEXT_KEY = "envoy.filters.http.ext_authz";
 
     public static final String WSO2_METADATA_PREFIX = "x-wso2-";

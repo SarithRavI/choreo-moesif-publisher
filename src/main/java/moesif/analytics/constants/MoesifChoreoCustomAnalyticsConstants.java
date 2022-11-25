@@ -1,6 +1,6 @@
 package moesif.analytics.constants;
 
-public class MoesifCustomAnalyticsConstants {
+public class MoesifChoreoCustomAnalyticsConstants {
     public static final String CUSTOM_ANALYTICS_DATA_PREFIX = "moesif-custom-data-";
     public static final String REQUEST_HEADERS = CUSTOM_ANALYTICS_DATA_PREFIX + "requestHeaders";
     public static final String RESPONSE_HEADERS = CUSTOM_ANALYTICS_DATA_PREFIX + "responseHeaders";
