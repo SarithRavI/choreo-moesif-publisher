@@ -18,8 +18,8 @@ public class MoesifChoreoParallelReporter extends DefaultAnalyticsMetricReporter
     public MoesifChoreoParallelReporter(Map<String, String> properties) throws MetricCreationException {
 
         super(properties);
-
-        String ID = "eyJhcHAiOiIxMDUxOjI1NSIsInZlciI6IjIuMCIsIm9yZyI6IjM1MToyNzciLCJpYXQiOjE2NjcyNjA4MDB9.rPbXw_lU6E5-5Ws-DG2uhiIEIecTMBtkQpJpSBATt5o";
+        // Set Moesif key as the ID
+        String ID = "";
         client = new MoesifAPIClient(ID);
         api = APIController.getInstance();
 
