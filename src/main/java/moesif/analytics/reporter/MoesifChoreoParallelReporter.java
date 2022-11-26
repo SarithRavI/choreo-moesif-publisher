@@ -27,7 +27,7 @@ public class MoesifChoreoParallelReporter extends DefaultAnalyticsMetricReporter
     }
     @Override
     public CounterMetric createCounter(String name, MetricSchema metricSchema) throws MetricCreationException {
-        MoesifChoreoParallelLogCounter logCounterMetric = new MoesifChoreoParallelLogCounter(name, metricSchema,eventQueue,api);
+        MoesifChoreoParallelLogCounter logCounterMetric = new MoesifChoreoParallelLogCounter(name, metricSchema,super.eventQueue,api);
 
         return logCounterMetric;
     }

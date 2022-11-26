@@ -48,7 +48,7 @@ public class MoesifChoreoParallelLogCounter extends DefaultCounterMetric {
         super.incrementCount(metricEventBuilder);
         MoesifChoreoMetricEventBuilder builder = (MoesifChoreoMetricEventBuilder) metricEventBuilder;
         try {
-            Map<String, Object> event = metricEventBuilder.build();
+            Map<String, Object> event = builder.buildForMoesif();
             publish(event);
         } catch (Throwable e) {
             log.error("Moesif: Not publishing event");

@@ -9,6 +9,7 @@ import org.wso2.am.analytics.publisher.reporter.cloud.DefaultResponseMetricEvent
 import org.wso2.am.analytics.publisher.util.Constants;
 import org.wso2.am.analytics.publisher.util.EventMapAttributeFilter;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class MoesifDefaultFaultMetricEventBuilder extends DefaultFaultMetricEventBuilder implements MoesifChoreoMetricEventBuilder{
@@ -20,11 +21,13 @@ public class MoesifDefaultFaultMetricEventBuilder extends DefaultFaultMetricEven
     public MoesifDefaultFaultMetricEventBuilder(){
         super();
         this.requiredAttributesForMoesif = GenericInputValidator.getInstance().getEventProperties(MetricSchema.ERROR);
+        this.moesifEventMap = new HashMap<>();
     }
 
     public MoesifDefaultFaultMetricEventBuilder(Map<String,Class> requiredAttributesForMoesif){
         super();
         this.requiredAttributesForMoesif = requiredAttributesForMoesif;
+        this.moesifEventMap = new HashMap<>();
     }
 
     public Map<String, Object> buildForMoesif() throws MetricReportingException {
@@ -53,7 +56,7 @@ public class MoesifDefaultFaultMetricEventBuilder extends DefaultFaultMetricEven
     @Override
     public MetricEventBuilder addAttribute(String key, Object value) throws MetricReportingException {
         // TODO: Check for concurrency issues.
-        eventMap.put(key, value);
+        super.eventMap.put(key, value);
         moesifEventMap.put(key, value);
         return this;
     }
