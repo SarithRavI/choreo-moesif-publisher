@@ -8,11 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.analytics.publisher.exception.MetricCreationException;
 import org.wso2.am.analytics.publisher.exception.MetricReportingException;
-import org.wso2.am.analytics.publisher.reporter.GenericInputValidator;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.MetricSchema;
-import org.wso2.am.analytics.publisher.reporter.cloud.DefaultChoreoFaultMetricEventBuilder;
-import org.wso2.am.analytics.publisher.reporter.cloud.DefaultChoreoResponseMetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.cloud.DefaultCounterMetric;
 import org.wso2.am.analytics.publisher.reporter.cloud.EventQueue;
 
@@ -87,6 +84,7 @@ public class MoesifChoreoParallelLogCounter extends DefaultCounterMetric {
 
         switch(schema) {
             case RESPONSE:
+            case CHOREO_RESPONSE:
                 // Async
                  ArrayList<EventModel> events = new ArrayList<>();
                  events.add(buildEventResponse(event));
@@ -95,6 +93,7 @@ public class MoesifChoreoParallelLogCounter extends DefaultCounterMetric {
                 // api.createEvent(buildEventResponse(event));
                 break;
             case ERROR:
+            case CHOREO_ERROR:
                 api.createEvent(buildEventFault(event));
                 break;
         }

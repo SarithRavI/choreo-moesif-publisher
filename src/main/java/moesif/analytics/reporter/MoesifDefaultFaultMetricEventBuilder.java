@@ -5,8 +5,6 @@ import org.wso2.am.analytics.publisher.reporter.GenericInputValidator;
 import org.wso2.am.analytics.publisher.reporter.MetricEventBuilder;
 import org.wso2.am.analytics.publisher.reporter.MetricSchema;
 import org.wso2.am.analytics.publisher.reporter.cloud.DefaultFaultMetricEventBuilder;
-import org.wso2.am.analytics.publisher.reporter.cloud.DefaultResponseMetricEventBuilder;
-import org.wso2.am.analytics.publisher.util.Constants;
 import org.wso2.am.analytics.publisher.util.EventMapAttributeFilter;
 
 import java.util.HashMap;

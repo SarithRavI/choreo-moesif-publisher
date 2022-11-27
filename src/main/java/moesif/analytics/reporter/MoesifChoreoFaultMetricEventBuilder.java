@@ -19,7 +19,7 @@ public class MoesifChoreoFaultMetricEventBuilder extends DefaultFaultMetricEvent
 
     public MoesifChoreoFaultMetricEventBuilder(){
         super(DefaultInputValidator.getInstance().getEventProperties(MetricSchema.CHOREO_ERROR));
-        this.requiredAttributesForMoesif = GenericInputValidator.getInstance().getEventProperties(MetricSchema.ERROR);
+        this.requiredAttributesForMoesif = GenericInputValidator.getInstance().getEventProperties(MetricSchema.CHOREO_ERROR);
         this.moesifEventMap = new HashMap<>();
     }
 

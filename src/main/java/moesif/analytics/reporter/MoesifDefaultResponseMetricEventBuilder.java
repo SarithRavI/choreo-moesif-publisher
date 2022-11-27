@@ -35,7 +35,6 @@ public class MoesifDefaultResponseMetricEventBuilder extends DefaultResponseMetr
         throw new MetricReportingException("Validation failure occurred when building the event");
     }
 
-
     public Map<String, Object> buildEventForMoesif() throws MetricReportingException {
         if (!isMoesifBuilt) {
             // util function to filter required attributes
